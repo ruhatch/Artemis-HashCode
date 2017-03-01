@@ -88,8 +88,8 @@ calculateCaches c x videoSizes endpoints requests = do
             if any (`Set.member` videoCaches) cacheList
               then return m
               else do
-                cacheID <- findCache caches cacheList videoID
-                case cacheID of
+                maybeCacheID <- findCache caches cacheList videoID
+                case maybeCacheID of
                   Just cacheID ->
                     case Map.lookup cacheID m of
                       Just resultSet ->
