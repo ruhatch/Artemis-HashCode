@@ -92,13 +92,10 @@ calculateCaches c x videoSizes endpoints requests = do
                 case maybeCacheID of
                   Just cacheID ->
                     case Map.lookup cacheID m of
-                      Just resultSet ->
-                        if Set.member videoID resultSet
-                          then return m
-                          else do
-                            VM.unsafeModify caches (flip (-) (videoSizes V.! videoID)) cacheID
-                            VM.unsafeModify videos (Set.insert cacheID) videoID
-                            return (Map.insert cacheID (Set.insert videoID resultSet) m)
+                      Just resultSet -> do
+                        VM.unsafeModify caches (flip (-) (videoSizes V.! videoID)) cacheID
+                        VM.unsafeModify videos (Set.insert cacheID) videoID
+                        return (Map.insert cacheID (Set.insert videoID resultSet) m)
                       Nothing -> do
                         VM.unsafeModify caches (flip (-) (videoSizes V.! videoID)) cacheID
                         VM.unsafeModify videos (Set.insert cacheID) videoID
