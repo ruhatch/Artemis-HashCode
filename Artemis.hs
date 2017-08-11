@@ -90,21 +90,19 @@ calculateCaches c x videoSizes endpoints requests = do
               else do
                 maybeCacheID <- findCache caches cacheList videoID
                 case maybeCacheID of
-                  Just cacheID ->
-                    case Map.lookup cacheID m of
-                      Just resultSet -> do
-                        VM.unsafeModify caches (flip (-) (videoSizes V.! videoID)) cacheID
-                        VM.unsafeModify videos (Set.insert cacheID) videoID
-                        return (Map.insert cacheID (Set.insert videoID resultSet) m)
-                      Nothing -> do
-                        VM.unsafeModify caches (flip (-) (videoSizes V.! videoID)) cacheID
-                        VM.unsafeModify videos (Set.insert cacheID) videoID
-                        return (Map.insert cacheID (Set.singleton videoID) m)
+                  Just cacheID -> do
+                    VM.unsafeModify caches (flip (-) (videoSizes V.! videoID)) cacheID
+                    VM.unsafeModify videos (Set.insert cacheID) videoID
+                    return $ Map.alter (updateSet videoID) cacheID m
                   Nothing -> return m)
           Map.empty
           requests
 
   where
+
+    updateSet :: Int -> Maybe IntSet -> Maybe IntSet
+    updateSet a Nothing    = Just (Set.singleton a)
+    updateSet a (Just set) = Just (Set.insert a set)
 
     findCache :: IOVector Int -> Vector Int -> Int -> IO (Maybe Int)
     findCache caches cacheList videoID = findCache' 0
